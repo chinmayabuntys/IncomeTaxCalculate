@@ -1,58 +1,73 @@
 let inpTax = document.getElementById("inp-tax");
-      let btnCal = document.getElementById("btn-cal");
-      let tax = document.getElementById("tax");
+let btnCal = document.getElementById("btn-cal");
+let tax = document.getElementById("tax");
+let downloadBtn = document.getElementById("downloadBtn");
 
-      btnCal.addEventListener("click", () => {
-        let income = Math.round(inpTax.value / 10) * 10;
-        let taxAmount = 0;
+/* Global variables so download can access them */
+let income = 0;
+let taxAmount = 0;
 
-        if (income >= 1200000) {
-          if (income <= 400000) {
-            taxAmount = 0;
-          } else if (income <= 800000) {
-            taxAmount = (income - 400000) * 0.05;
-          } else if (income <= 1200000) {
-            taxAmount = 400000 * 0.05 + (income - 800000) * 0.1;
-          } else if (income <= 1600000) {
-            taxAmount =
-              400000 * 0.05 + 400000 * 0.1 + (income - 1200000) * 0.15;
-          } else if (income <= 2000000) {
-            taxAmount =
-              400000 * 0.05 +
-              400000 * 0.1 +
-              400000 * 0.15 +
-              (income - 1600000) * 0.2;
-          } else if (income <= 2400000) {
-            taxAmount =
-              400000 * 0.05 +
-              400000 * 0.1 +
-              400000 * 0.15 +
-              400000 * 0.2 +
-              (income - 2000000) * 0.25;
-          } else {
-            taxAmount =
-              400000 * 0.05 +
-              400000 * 0.1 +
-              400000 * 0.15 +
-              400000 * 0.2 +
-              400000 * 0.25 +
-              (income - 2400000) * 0.3;
-          }
+/* Button click */
+btnCal.addEventListener("click", calculateTax);
 
-          tax.innerHTML = `
+/* Enter key support */
+inpTax.addEventListener("keypress", function(e){
+if(e.key === "Enter"){
+calculateTax();
+}
+});
 
+function calculateTax(){
+
+if(inpTax.value === "" || inpTax.value <= 0){
+tax.innerHTML = `<div class="result">⚠ Please enter valid income</div>`;
+downloadBtn.style.display = "none";
+return;
+}
+
+/* round income */
+income = Math.round(inpTax.value / 10) * 10;
+taxAmount = 0;
+
+/* tax calculation */
+
+if(income >= 1200000){
+
+if(income <= 400000){
+taxAmount = 0;
+}
+else if(income <= 800000){
+taxAmount = (income - 400000) * 0.05;
+}
+else if(income <= 1200000){
+taxAmount = 400000 * 0.05 + (income - 800000) * 0.1;
+}
+else if(income <= 1600000){
+taxAmount = 400000 * 0.05 + 400000 * 0.1 + (income - 1200000) * 0.15;
+}
+else if(income <= 2000000){
+taxAmount = 400000 * 0.05 + 400000 * 0.1 + 400000 * 0.15 + (income - 1600000) * 0.2;
+}
+else if(income <= 2400000){
+taxAmount = 400000 * 0.05 + 400000 * 0.1 + 400000 * 0.15 + 400000 * 0.2 + (income - 2000000) * 0.25;
+}
+else{
+taxAmount = 400000 * 0.05 + 400000 * 0.1 + 400000 * 0.15 + 400000 * 0.2 + 400000 * 0.25 + (income - 2400000) * 0.3;
+}
+
+tax.innerHTML = `
 <div class="result">
 
-<h1>Total Income : ₹${income}</h3>
+<h1>Total Income : ₹${income}</h1>
 <h2>Total Tax : ₹${Math.round(taxAmount)}</h2>
-<h3>Remaining Amount:₹${Math.round(income-taxAmount)}
+<h3>Remaining Amount : ₹${Math.round(income - taxAmount)}</h3>
 
 <table>
-
 <tr>
 <th>Income Slab</th>
 <th>Rate</th>
 </tr>
+
 <tr>
 <td>0L - 4L</td>
 <td>0%</td>
@@ -91,9 +106,40 @@ let inpTax = document.getElementById("inp-tax");
 </table>
 
 </div>
-
 `;
-        } else {
-          tax.innerHTML = `<div class="result">No tax required as per Govt rules</div>`;
-        }
-      });
+
+downloadBtn.style.display = "block";
+
+}
+
+else{
+
+tax.innerHTML = `<div class="result">No tax required as per Govt rules</div>`;
+downloadBtn.style.display = "none";
+
+}
+
+}
+
+/* Download report */
+
+downloadBtn.addEventListener("click", function(){
+
+let report = `
+Income Tax Report
+
+Total Income : ₹${income}
+Total Tax : ₹${Math.round(taxAmount)}
+Remaining Amount : ₹${Math.round(income - taxAmount)}
+`;
+
+let blob = new Blob([report], { type: "text/plain" });
+
+let link = document.createElement("a");
+
+link.href = URL.createObjectURL(blob);
+link.download = "tax-report.txt";
+
+link.click();
+
+});
